@@ -36,10 +36,10 @@ For testing purposes, here are the lights you need to click to get from a fully 
 
 ### Added features
 You can add more features to the base game:
-* Start with a random configuration, instead of all of the lights on. Hint: not all random sequences are solvable, so be careful to make sure it can be won!
-* Include a start screen with the directions written in text
-* Keep track of the number of lights the user clicks and display it on the screen at all times
-* Record the amount of time it takes the user to finish the game and print it on the end screen
+* Start with a random configuration, instead of all of the lights on. Hint: not all random sequences are solvable, so be careful to make sure it can be won! --Matt
+* Include a start screen with the directions written in text --JJ
+* Keep track of the number of lights the user clicks and display it on the screen at all times --JJ
+* Record the amount of time it takes the user to finish the game and print it on the end screen --JJ
 
 ## Grading
 The project is out of 50 points.
