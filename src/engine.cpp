@@ -3,6 +3,8 @@
 
 const color borderHover(1, 0, 0);
 const color hoverTileColor(0, 0, 0);
+enum state {start, play, directions, over};
+state screen;
 
 
 Engine::Engine() : keys() {
@@ -163,19 +165,46 @@ void Engine::update() {
 }
 
 void Engine::render() {
-    glfwSwapBuffers(window);
-    for (const unique_ptr<Shape> &h : hoverSquare) {
-        h->setUniforms();
-        h->draw();
-    }
-    // Render and draw the tiles on grid
-    for (auto &row: tiles) {
-        for (auto &t: row) {
-            t.setUniforms();
-            t.draw();
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set background color
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // Set shader to use for all shapes
+    shapeShader.use();
+
+    switch (screen) {
+        case start: {
+            string message = "Press s to start";
+            // (12 * message.length()) is the offset to center text.
+            // 12 pixels is the width of each character scaled by 1.
+            this->fontRenderer->renderText(message, width / 2 - (12 * message.length()), height / 2, 1, vec3{1, 1, 1});
+            string message1 = "The game is simple."; // To be more defined later.
+            // (12 * message.length()) is the offset to center text.
+            // 12 pixels is the width of each character scaled by 1.
+            this->fontRenderer->renderText(message1, width / 2 - (12 * message1.length()), height / 2, 1,
+                                           vec3{1, 1, 1});
+            break;
+        }
+        case play: {
+            // Underlying invisible squares
+            for (const unique_ptr<Shape> &h: hoverSquare) {
+                h->setUniforms();
+                h->draw();
+            }
+            // Render and draw the tiles on grid
+            for (auto &row: tiles) {
+                for (auto &t: row) {
+                    t.setUniforms();
+                    t.draw();
+                }
+            }
+        }
+        case over: {
+            string message = "You win!  Want to play again?";
+            fontRenderer->renderText(message, width / 2 - (12 * message.length()), height / 2, 1, vec3{1, 1, 1});
+            break;
         }
     }
-
+    glfwSwapBuffers(window);
 }
 
 bool Engine::shouldClose() {
