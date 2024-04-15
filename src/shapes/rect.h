@@ -11,6 +11,7 @@ class Rect : public Shape {
 private:
     /// @brief Initializes the vertices and indices of the square
     void initVectors();
+    bool isOn = true;
 public:
     /// @brief Construct a new Square object
     /// @details This constructor will call the InitRenderData function.
@@ -27,12 +28,17 @@ public:
 
     /// @brief Binds the VAO and calls the virtual draw function
     void draw() const override;
+    bool isOverlapping(const vec2 &point) const override;
+    bool toggle();
 
     float getLeft() const override;
     float getRight() const override;
     float getTop() const override;
     float getBottom() const override;
+
+
 };
 
 
 #endif //GRAPHICS_RECT_H
+ 

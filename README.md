@@ -1,31 +1,52 @@
-# Confetti Button
+# CS 2300 Module 4 Applied Project: Lights Out
 
-Hopefully you have something to celebrate, because the confetti is coming!
+Hey! Who turned out the lights?
 
-For this project, you will use C++ graphics with classes to get a button to react to mouse and keyboard activity.
+For this project, you will create a C++ graphics program that allows the user to play the game Lights Out.
 
-You may work individually or with a partner of your choosing.
+## Requirements
+You must collaborate on this project to receive full credit. You can work in a team of 2-4 people.
 
-## Setup
+* Create a **private** GitHub repository in the course organization.
+  * **Your repository must be named with the convention: Lights-Out-netid1-netid2[-netid3-netid4]**, where netid is your UVM NetID username.
+  * Have one team member create the repository and add the other members as collaborators (on GitHub, go to Settings -> Collaborators and Teams, then add the others' GitHub usernames).
 
-Use this Guided Project template to create a new repository (see [GitHub-with-CLion](https://github.com/uvmcs2300s2024/GitHub-with-CLion) repo for directions).
-**Your repository must be named with the convention: Confetti-Button-netid**, where netid is your UVM NetID username.
-* If you are collaborating, the format is Confetti-Button-netid1-netid2. Have one partner create the repository and give the other partner access on GitHub: on the repository page, go to the Settings tab, choose Manage Access, and add the person with their GitHub username.
+## Lights Out
+Lights Out was a handheld game in the days of Lisa's childhood. You can play it online here: [https://www.logicgamesonline.com/lightsout/](https://www.logicgamesonline.com/lightsout/).
 
-Remember to commit and push frequently.
+### Base Game
+In its simplest form, the 5x5 grid of lights begins with all of the lights lit. When you click on one of the lights, it toggles itself and the (up to) four lights it borders.
 
-# Requirements
+Here's a gif of the beginning of the game, where the lights have a red outline hover effect: 
 
-1. Read through the header and .cpp files for Shape and Rect, inside the src/shapes folder.
-1. Implement the methods in Shape.cpp and Rect.cpp that have TODO comments.
-1. Read through engine.cpp in the src folder.
-1. Implement the TODO parts of engine.cpp.
+![Lights-Out-Game-Start.gif](Lights-Out-Game-Start.gif)
+
+When you make all the lights go off, you win the game and can no longer click on the lights:
+
+![Lights-Out-Game-End.gif](Lights-Out-Game-End.gif)
+
+For testing purposes, here are the lights you need to click to get from a fully lit start to a fully unlit end:
+
+| | | |*|*|
+|-|-|-|-|-|
+|*|*| |*|*|
+|*|*|*| | |
+| |*|*|*| |
+|*| |*|*| |
+
+### Added features
+You can add more features to the base game:
+* Start with a random configuration, instead of all of the lights on. Hint: not all random sequences are solvable, so be careful to make sure it can be won!
+* Include a start screen with the directions written in text
+* Keep track of the number of lights the user clicks and display it on the screen at all times
+* Record the amount of time it takes the user to finish the game and print it on the end screen
 
 ## Grading
+The project is out of 50 points.
 
-If you are collaborating, both partners have to submit the project.
+| Points Possible | Description of requirement        |
+|-----------------|-----------------------------------|
+| 30 pts          | Base game to match the given gifs |
+| 5 pts each      | Added features listed above       |
 
-### Grading Rubric
-- [ ] (2 pts) Complete TODOs in rect.cpp
-- [ ] (2 pts) Complete TODO in shape.cpp
-- [ ] (16 pts) Complete all TODOs in engine.cpp.
+It is expected that your program will compile, run, and have good style. If your project does not, you may receive point deductions.

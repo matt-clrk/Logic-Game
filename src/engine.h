@@ -33,6 +33,12 @@ private:
     /// @details Initialized in initShaders()
     unique_ptr<ShaderManager> shaderManager;
 
+ 	// This is the vector used for storing the tiles
+    vector<vector<Rect>> tiles;
+    vector<unique_ptr<Shape>> hoverSquare;
+
+
+
     /// @brief Responsible for rendering text on the screen.
     /// @details Initialized in initShaders()
     unique_ptr<FontRenderer> fontRenderer;
@@ -72,9 +78,6 @@ public:
     /// @brief Initializes the shapes to be rendered.
     void initShapes();
 
-    /// @brief Pushes back a new colored rectangle to the confetti vector.
-    void spawnConfetti();
-
     /// @brief Processes input from the user.
     /// @details (e.g. keyboard input, mouse input, etc.)
     void processInput();
@@ -86,6 +89,10 @@ public:
     /// @brief Renders the game state.
     /// @details Displays/renders objects on the screen.
     void render();
+
+    // New function
+    void checkExist(int row, int col);
+    void toggleTouchingTiles(int row, int col);
 
     /* deltaTime variables */
     float deltaTime = 0.0f; // Time between current frame and last frame

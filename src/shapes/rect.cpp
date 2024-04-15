@@ -7,6 +7,7 @@ Rect::Rect(Shader & shader, vec2 pos, vec2 size, struct color color)
     initVAO();
     initVBO();
     initEBO();
+    isOn = true;
 }
 
 Rect::Rect(Rect const& other) : Shape(other) {
@@ -29,12 +30,12 @@ void Rect::draw() const {
 
 void Rect::initVectors() {
     this->vertices.insert(vertices.end(), {
-            // TODO: Add other three corners here
-            -0.5f, 0.5f,   // Top left
-            0.5f, 0.5f,   // Top right
-            -0.5f, -0.5f,  // Bottom left
-            0.5f, -0.5f   // Bottom right
-            // Order does matter
+            0.5f, -0.5f,  // x, y of bottom right corner
+            0.5f, 0.5f,  // top right corner
+            -0.5f, -0.5f, // bottom left corner
+            -0.5f, 0.5f, // top left corner
+            -0.5f, -0.5f, // bottom left corner
+            0.5f, 0.5f
     });
 
     this->indices.insert(indices.end(), {
@@ -42,9 +43,31 @@ void Rect::initVectors() {
             1, 2, 3  // Second triangle
     });
 }
+
+bool Rect::isOverlapping(const vec2 &point) const {
+    // A shape is overlapping a point if the point is within the shape's bounding box.
+    if (getLeft() <= point.x && getRight() >=point.x) {
+        if (getTop() > point.y && getBottom() < point.y) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Rect::toggle() {
+    //cout << isOn;
+    if (isOn) {
+        setColor(LIGHT_GRAY);
+        isOn = false;
+    }
+    else {
+        setColor(YELLOW);
+        this->isOn = true;
+    }
+}
+
 // Overridden Getters from Shape
 float Rect::getLeft() const        { return pos.x - (size.x / 2); }
-// TODO: Implement getRight, getTop, and getBottom
 float Rect::getRight() const       { return pos.x + (size.x / 2); }
 float Rect::getTop() const         { return pos.y + (size.y / 2); }
 float Rect::getBottom() const      { return pos.y - (size.y / 2); }

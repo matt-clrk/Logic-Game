@@ -1,22 +1,14 @@
 #include "engine.h"
+#include <iostream>
 
-enum state {start, play, over};
-state screen;
+const color borderHover(1, 0, 0);
+const color hoverTileColor(0, 0, 0);
 
-// Colors
-color originalFill, hoverFill, pressFill;
-
-// TODO Note: complete the drawing TODOs in render before the other TODOs,
-//  otherwise you won't be able to see if your code is correct
 
 Engine::Engine() : keys() {
     this->initWindow();
     this->initShaders();
     this->initShapes();
-
-    originalFill = {1, 0, 0, 1};
-    hoverFill.vec = originalFill.vec + vec4{0.5, 0.5, 0.5, 0};
-    pressFill.vec = originalFill.vec - vec4{0.5, 0.5, 0.5, 0};
 }
 
 Engine::~Engine() {}
@@ -59,19 +51,47 @@ void Engine::initShaders() {
     // Load shader into shader manager and retrieve it
     shapeShader = this->shaderManager->loadShader("../res/shaders/shape.vert", "../res/shaders/shape.frag",  nullptr, "shape");
 
-    // Configure text shader and renderer
-    textShader = shaderManager->loadShader("../res/shaders/text.vert", "../res/shaders/text.frag", nullptr, "text");
-    fontRenderer = make_unique<FontRenderer>(shaderManager->getShader("text"), "../res/fonts/MxPlus_IBM_BIOS.ttf", 24);
-
-    // Set uniforms
-    textShader.setVector2f("vertex", vec4(100, 100, .5, .5));
+    // Set uniforms that never change
     shapeShader.use();
     shapeShader.setMatrix4("projection", this->PROJECTION);
 }
 
 void Engine::initShapes() {
-    // red spawn button centered in the top left corner
-    spawnButton = make_unique<Rect>(shapeShader, vec2{width/2,height/2}, vec2{100, 50}, color{1, 0, 0, 1});
+    // Size of the tiles
+    const int tileSize = 75;
+    // Variable for 5x5 grid
+    const int numTilesInGrid = 5;
+    // Spacing in between tiles
+    const int spacing = 10;
+    // Size of the underlying tile
+    const int hoverTile = 80;
+    // Total width and height that the tiles in grid will take up in the window
+    int totalWidth = numTilesInGrid * tileSize + ((numTilesInGrid - 1) * spacing);
+    int totalHeight = numTilesInGrid * tileSize + ((numTilesInGrid - 1) * spacing);
+
+    // Starting x position for grid
+    float startX = (width - totalWidth) / 2.0f;
+    // Starting y position for grid
+    float startY = (height - totalHeight) / 2.0f;
+
+    // Visible lightsOn squares
+    for (int row = 0; row < numTilesInGrid; row++) {
+        std::vector<Rect> rects;
+        for (int col = 0; col < numTilesInGrid; col++) {
+            float xPos = (startX + (tileSize / 2)) + col * (tileSize + spacing);
+            float yPos = (startY + (tileSize / 2)) + row * (tileSize + spacing);
+            rects.push_back(Rect(shapeShader, vec2(xPos, yPos), vec2(tileSize), YELLOW));
+        }
+        tiles.push_back(rects);
+    }
+    // Pushes to a vector of the underlying squares that are invisible unless hovered over
+    for (int hRow = 0; hRow < numTilesInGrid; hRow++) {
+        for (int hCol = 0; hCol < numTilesInGrid; hCol++) {
+            float xPos = (startX + (tileSize / 2)) + hCol * (tileSize + spacing);
+            float yPos = (startY + (tileSize / 2)) + hRow * (tileSize + spacing);
+            hoverSquare.push_back(make_unique<Rect>(shapeShader, vec2(xPos, yPos), vec2(hoverTile), hoverTileColor));
+        }
+    }
 }
 
 void Engine::processInput() {
@@ -89,70 +109,50 @@ void Engine::processInput() {
     if (keys[GLFW_KEY_ESCAPE])
         glfwSetWindowShouldClose(window, true);
 
-    // Mouse position saved to check for collisions
+    // Cursor input processing
     glfwGetCursorPos(window, &MouseX, &MouseY);
-
-    // TODO: If we're in the start screen and the user presses s, change screen to play
-    // Hint: The index is GLFW_KEY_S
-    if (keys[GLFW_KEY_S])
-        if (screen == start)
-            screen = play;
-
-    // TODO: If we're in the play screen and an arrow key is pressed, move the spawnButton
-    if (screen == play) {
-        if (keys[GLFW_KEY_UP])
-            spawnButton->moveY(5);
-        if (keys[GLFW_KEY_DOWN])
-            spawnButton->moveY(-5);
-        if (keys[GLFW_KEY_LEFT])
-            spawnButton->moveX(-5);
-        if (keys[GLFW_KEY_RIGHT])
-            spawnButton->moveX(5);
-    }
-    // Hint: one of the indices is GLFW_KEY_UP
-    // TODO: Make sure the spawnButton cannot go off the screen
-    if (spawnButton->getPosX() < 0) {
-        spawnButton->setPosX(0);
-    }
-    if (spawnButton->getPosX() > width) {
-        spawnButton->setPosX(width);
-    }
-    if (spawnButton->getPosY() < 0) {
-        spawnButton->setPosY(0);
-    }
-    if (spawnButton->getPosY() > height) {
-        spawnButton->setPosY(height);
+    MouseY = height - MouseY;
+    // Changes the color of border if mouse is hovering over tile
+    for (const unique_ptr<Shape> &hoverTile : hoverSquare) {
+        bool hoverOverlapsMouse = hoverTile->isOverlapping(vec2(MouseX, MouseY));
+        if (hoverOverlapsMouse) {
+            hoverTile->setColor(borderHover);
+        }
+        else {
+            hoverTile->setColor(hoverTileColor);
+            }
     }
 
-    // Mouse position is inverted because the origin of the window is in the top left corner
-    MouseY = height - MouseY; // Invert y-axis of mouse position
-    bool buttonOverlapsMouse = spawnButton->isOverlapping(vec2(MouseX, MouseY));
+
+    // Turn lights off
     bool mousePressed = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
-
-    // TODO: When in play screen, if the user hovers or clicks on the button then change the spawnButton's color
-    // Hint: look at the color objects declared at the top of this file
-    if (buttonOverlapsMouse == true) {
-        spawnButton->setColor(hoverFill);
+    if (!mousePressed && mousePressedLastFrame) {
+        for (int row = 0; row < 5; ++row) {
+            for (int col = 0; col < 5; ++col) {
+                bool tileOverlapsMouse = tiles[row][col].isOverlapping(vec2(MouseX, MouseY));
+                if (tileOverlapsMouse && mousePressedLastFrame) {
+                    toggleTouchingTiles(row, col);
+                }
+            }
+        }
     }
 
-    if (mousePressed == true && buttonOverlapsMouse == true) {
-        spawnButton->setColor(pressFill);
-    }
-
-    // TODO: When in play screen, if the button was released then spawn confetti
-    // Hint: the button was released if it was pressed last frame and is not pressed now
-    if (mousePressed == false && mousePressedLastFrame == true && buttonOverlapsMouse == true) {
-        spawnConfetti();
-    }
-
-    // TODO: Make sure the spawn button is its original color when the user is not hovering or clicking on it.
-    if (buttonOverlapsMouse == false && mousePressed == false) {
-        spawnButton->setColor(originalFill);
-    }
-
-    // Save mousePressed for next frame
     mousePressedLastFrame = mousePressed;
 
+}
+
+void Engine::checkExist(int row, int col) {
+    if (row >= 0 && row < 5 && col >= 0 && col < 5) {
+        tiles[row][col].toggle();
+    }
+}
+
+void Engine::toggleTouchingTiles(int row, int col) {
+    tiles[row][col].toggle();
+    checkExist(row - 1, col);
+    checkExist(row + 1, col);
+    checkExist(row , col - 1);
+    checkExist(row, col + 1);
 }
 
 void Engine::update() {
@@ -160,81 +160,24 @@ void Engine::update() {
     float currentFrame = glfwGetTime();
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
-
-    // TODO: End the game when the user spawns 100 confetti
-    // If the size of the confetti vector reaches 100, change screen to over
-    if (confetti.size() >= 100)
-        screen = over;
 }
 
 void Engine::render() {
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set background color
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    // Set shader to use for all shapes
-    shapeShader.use();
-
-    // Render differently depending on screen
-    switch (screen) {
-        case start: {
-            string message = "Press s to start";
-            // (12 * message.length()) is the offset to center text.
-            // 12 pixels is the width of each character scaled by 1.
-            this->fontRenderer->renderText(message, width/2 - (12 * message.length()), height/2, 1, vec3{1, 1, 1});
-            break;
-        }
-        case play: {
-            // TODO: call setUniforms and draw on the spawnButton and all of the confetti pieces
-            //  Hint: make sure you draw the spawn button after the confetti to make it appear on top
-            // Render font on top of spawn button
-            for (int i = 0; i < confetti.size(); i++) {
-                confetti[i]->setUniforms();
-                confetti[i]->draw();
-            }
-            spawnButton->setUniforms();
-            spawnButton->draw();
-            fontRenderer->renderText("Spawn", spawnButton->getPos().x - 30, spawnButton->getPos().y - 5, 0.5, vec3{1, 1, 1});
-
-            break;
-        }
-        case over: {
-            string message = "You win!";
-            // TODO: Display the message on the screen
-            fontRenderer->renderText(message, width/2 - (12 * message.length()), height/2, 1, vec3{1, 1, 1});
-            break;
+    glfwSwapBuffers(window);
+    for (const unique_ptr<Shape> &h : hoverSquare) {
+        h->setUniforms();
+        h->draw();
+    }
+    // Render and draw the tiles on grid
+    for (auto &row: tiles) {
+        for (auto &t: row) {
+            t.setUniforms();
+            t.draw();
         }
     }
 
-    glfwSwapBuffers(window);
-}
-
-void Engine::spawnConfetti() {
-    vec2 pos = {rand() % (int)width, rand() % (int)height};
-    // TODO: Make each piece of confetti a different size, getting bigger with each spawn.
-    //  The smallest should be a square of size 1 and the biggest should be a square of size 100
-    vec2 size = {1+confetti.size(), 1+confetti.size()}; // placeholder
-    color color = {float(rand() % 10 / 10.0), float(rand() % 10 / 10.0), float(rand() % 10 / 10.0), 1.0f};
-    confetti.push_back(make_unique<Rect>(shapeShader, pos, size, color));
 }
 
 bool Engine::shouldClose() {
     return glfwWindowShouldClose(window);
-}
-
-GLenum Engine::glCheckError_(const char *file, int line) {
-    GLenum errorCode;
-    while ((errorCode = glGetError()) != GL_NO_ERROR) {
-        string error;
-        switch (errorCode) {
-            case GL_INVALID_ENUM:                  error = "INVALID_ENUM"; break;
-            case GL_INVALID_VALUE:                 error = "INVALID_VALUE"; break;
-            case GL_INVALID_OPERATION:             error = "INVALID_OPERATION"; break;
-            case GL_STACK_OVERFLOW:                error = "STACK_OVERFLOW"; break;
-            case GL_STACK_UNDERFLOW:               error = "STACK_UNDERFLOW"; break;
-            case GL_OUT_OF_MEMORY:                 error = "OUT_OF_MEMORY"; break;
-            case GL_INVALID_FRAMEBUFFER_OPERATION: error = "INVALID_FRAMEBUFFER_OPERATION"; break;
-        }
-        cout << error << " | " << file << " (" << line << ")" << endl;
-    }
-    return errorCode;
 }
