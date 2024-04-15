@@ -4,7 +4,7 @@
 const color borderHover(1, 0, 0);
 const color hoverTileColor(0, 0, 0);
 enum state {start, play, over};
-state screen;
+state screen;  // Believe the state starts at first position
 
 
 Engine::Engine() : keys() {
@@ -52,6 +52,11 @@ void Engine::initShaders() {
 
     // Load shader into shader manager and retrieve it
     shapeShader = this->shaderManager->loadShader("../res/shaders/shape.vert", "../res/shaders/shape.frag",  nullptr, "shape");
+
+    // Configure text shader and renderer
+    textShader = shaderManager->loadShader("../res/shaders/text.vert", "../res/shaders/text.frag", nullptr, "text");
+    fontRenderer = make_unique<FontRenderer>(shaderManager->getShader("text"), "../res/fonts/MxPlus_IBM_BIOS.ttf", 24);
+
 
     // Set uniforms that never change
     shapeShader.use();
@@ -189,7 +194,7 @@ void Engine::render() {
             string message1 = "The game is simple."; // To be more defined later.
             // (12 * message.length()) is the offset to center text.
             // 12 pixels is the width of each character scaled by 1.
-            this->fontRenderer->renderText(message1, width / 2 - (12 * message1.length()), height / 2, 1,
+            this->fontRenderer->renderText(message1, width / 2 - (12 * message.length()), height / 2, 1,
                                            vec3{1, 1, 1});
             break;
         }
@@ -206,6 +211,7 @@ void Engine::render() {
                     t.draw();
                 }
             }
+            break;
         }
         case over: {
             string message = "You win!  Want to play again?";
