@@ -3,7 +3,7 @@
 
 const color borderHover(1, 0, 0);
 const color hoverTileColor(0, 0, 0);
-enum state {start, play, directions, over};
+enum state {start, play, over};
 state screen;
 
 
@@ -125,6 +125,15 @@ void Engine::processInput() {
             }
     }
 
+    // Changing from start to play screens
+    if (keys[GLFW_KEY_S])
+        if (screen == start)
+            screen = play;
+
+    // Changing from play to end screens
+    if (keys[GLFW_KEY_E])
+        if (screen == play)
+            screen = over;
 
     // Turn lights off
     bool mousePressed = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
