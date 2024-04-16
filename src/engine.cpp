@@ -1,12 +1,14 @@
 #include "engine.h"
 #include <iostream>
 #include <random>
+#include <string>
 using namespace std;
 
 const color borderHover(1, 0, 0);
 const color hoverTileColor(0, 0, 0);
 enum state {start, play, over};
 state screen;  // Believe the state starts at first position
+int flips = 0; // Number of times the lights have been clicked
 
 
 Engine::Engine() : keys() {
@@ -138,7 +140,7 @@ void Engine::processInput() {
         if (screen == start)
             screen = play;
 
-    // Changing from play to end screens
+    // Changing from play to end screens, entirely for debugging
     if (keys[GLFW_KEY_E])
         if (screen == play)
             screen = over;
@@ -146,6 +148,7 @@ void Engine::processInput() {
     // Turn lights off
     bool mousePressed = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
     if (!mousePressed && mousePressedLastFrame) {
+        flips += 1;
         for (int row = 0; row < 5; ++row) {
             for (int col = 0; col < 5; ++col) {
                 bool tileOverlapsMouse = tiles[row][col].isOverlapping(vec2(MouseX, MouseY));
@@ -202,6 +205,8 @@ void Engine::update() {
     float currentFrame = glfwGetTime();
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
+
+
 }
 
 void Engine::render() {
@@ -216,7 +221,7 @@ void Engine::render() {
             string message = "Press s to start";
             // (12 * message.length()) is the offset to center text.
             // 12 pixels is the width of each character scaled by 1.
-            this->fontRenderer->renderText(message, width / 2 - (12 * message.length()), height / 2, 1, vec3{1, 1, 1});
+            this->fontRenderer->renderText(message, width / 2 - (12 * message.length()), height * 3 / 4, 1, vec3{1, 1, 1});
             string message1 = "The game is simple."; // To be more defined later.
             // (12 * message.length()) is the offset to center text.
             // 12 pixels is the width of each character scaled by 1.
@@ -241,7 +246,11 @@ void Engine::render() {
         }
         case over: {
             string message = "You win!  Want to play again?";
-            fontRenderer->renderText(message, width / 2 - (12 * message.length()), height / 2, 1, vec3{1, 1, 1});
+            fontRenderer->renderText(message, width / 2 - (12 * message.length()), height *3 / 4, 1, vec3{1, 1, 1});
+
+            string messageMoves = "Clicks taken: ";
+            messageMoves += to_string(flips);
+            fontRenderer->renderText(messageMoves, width / 2 - (12 * messageMoves.length()), height / 2, 1, vec3{1, 1, 1});
             break;
         }
     }
