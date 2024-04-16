@@ -9,7 +9,8 @@ const color hoverTileColor(0, 0, 0);
 enum state {start, play, over};
 state screen;  // Believe the state starts at first position
 int flips = 0; // Number of times the lights have been clicked
-
+float timeTaken = 0; // Time taken to solve puzzle
+float endTime = 0; // Ending time
 
 Engine::Engine() : keys() {
     this->initWindow();
@@ -137,23 +138,31 @@ void Engine::processInput() {
 
     // Changing from start to play screens
     if (keys[GLFW_KEY_S])
-        if (screen == start)
+        if (screen == start) {
+            timeTaken = glfwGetTime();
+            cout << timeTaken << endl;
             screen = play;
+        }
 
     // Changing from play to end screens, entirely for debugging
     if (keys[GLFW_KEY_E])
-        if (screen == play)
+        if (screen == play) {
+            endTime = glfwGetTime();
+            timeTaken = endTime - timeTaken;
+            cout << timeTaken << endl;
             screen = over;
+        }
 
     // Turn lights off
     bool mousePressed = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
     if (!mousePressed && mousePressedLastFrame) {
-        flips += 1;
         for (int row = 0; row < 5; ++row) {
             for (int col = 0; col < 5; ++col) {
                 bool tileOverlapsMouse = tiles[row][col].isOverlapping(vec2(MouseX, MouseY));
                 if (tileOverlapsMouse && mousePressedLastFrame) {
                     toggleTouchingTiles(row, col);
+                    if (screen == play)
+                        flips += 1;
                 }
             }
         }
@@ -230,6 +239,9 @@ void Engine::render() {
             break;
         }
         case play: {
+            // Setting the time
+            timeTaken = glfwGetTime();
+
             // Underlying invisible squares
             for (const unique_ptr<Shape> &h: hoverSquare) {
                 h->setUniforms();
@@ -251,6 +263,11 @@ void Engine::render() {
             string messageMoves = "Clicks taken: ";
             messageMoves += to_string(flips);
             fontRenderer->renderText(messageMoves, width / 2 - (12 * messageMoves.length()), height / 2, 1, vec3{1, 1, 1});
+
+            string messageTime = "Time taken: ";
+            messageTime += to_string(trunc(timeTaken));
+            fontRenderer->renderText(messageTime, width / 2 - (12 * messageTime.length()), height / 4, 1, vec3{1, 1, 1});
+
             break;
         }
     }
