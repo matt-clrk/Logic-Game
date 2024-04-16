@@ -167,11 +167,15 @@ void Engine::checkExist(int row, int col) {
 }
 
 void Engine::randomConfig() {
+    // Unused variable for unsolvable
     bool unsolvable = false;
     for (int i = 0; i < 5; i++) {
         for (int j = 0; j < 5; j++) {
+            // Random device variable
             random_device randDevice;
+            // Mersenne twister variable
             mt19937 twister(randDevice());
+            // Integer distribution variable
             uniform_int_distribution<int> genNumsInRange(0, 4);
             int randomRow = genNumsInRange(twister);
             int randomCol = genNumsInRange(twister);
@@ -181,10 +185,15 @@ void Engine::randomConfig() {
 }
 
 void Engine::toggleTouchingTiles(int row, int col) {
+    // Checks to see if tiles are touching
     tiles[row][col].toggle();
+    // Tile above
     checkExist(row - 1, col);
+    // Tile below
     checkExist(row + 1, col);
+    // Tile to the left
     checkExist(row , col - 1);
+    // Tile to the right
     checkExist(row, col + 1);
 }
 
