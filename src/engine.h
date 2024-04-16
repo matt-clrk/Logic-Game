@@ -93,6 +93,7 @@ public:
     // New function
     void checkExist(int row, int col);
     void toggleTouchingTiles(int row, int col);
+    void randomConfig();
 
     /* deltaTime variables */
     float deltaTime = 0.0f; // Time between current frame and last frame

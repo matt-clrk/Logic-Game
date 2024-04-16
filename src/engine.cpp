@@ -1,5 +1,7 @@
 #include "engine.h"
 #include <iostream>
+#include <random>
+using namespace std;
 
 const color borderHover(1, 0, 0);
 const color hoverTileColor(0, 0, 0);
@@ -11,6 +13,7 @@ Engine::Engine() : keys() {
     this->initWindow();
     this->initShaders();
     this->initShapes();
+    this->randomConfig();
 }
 
 Engine::~Engine() {}
@@ -160,6 +163,20 @@ void Engine::processInput() {
 void Engine::checkExist(int row, int col) {
     if (row >= 0 && row < 5 && col >= 0 && col < 5) {
         tiles[row][col].toggle();
+    }
+}
+
+void Engine::randomConfig() {
+    bool unsolvable = false;
+    for (int i = 0; i < 5; i++) {
+        for (int j = 0; j < 5; j++) {
+            random_device randDevice;
+            mt19937 twister(randDevice());
+            uniform_int_distribution<int> genNumsInRange(0, 4);
+            int randomRow = genNumsInRange(twister);
+            int randomCol = genNumsInRange(twister);
+            tiles[randomRow][randomCol].toggle();
+        }
     }
 }
 
